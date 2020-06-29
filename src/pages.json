@@ -1,12 +1,53 @@
 {
   "pages": [
+
+    {
+      "path": "pages/rooms/roomList",
+      "style": {
+        "navigationBarTitleText": "Homital",
+        "enablePullDownRefresh": false
+      }
+    },
+
+    {
+      "path": "pages/devices/deviceList",
+      "style": {
+        "navigationBarTitleText": "View devices",
+        "enablePullDownRefresh": false
+      }
+    },
+
+
+    {
+      "path": "pages/rooms/roomAdd",
+      "style": {
+        "navigationBarTitleText": "Add new room",
+        "enablePullDownRefresh": false
+      }
+    },
+
+    {
+      "path": "pages/devices/deviceList",
+      "style": {
+        "navigationBarTitleText": "View devices",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/devices/deviceAdd",
+      "style": {
+        "navigationBarTitleText": "Add new device",
+        "enablePullDownRefresh": false
+      }
+    },
     {
       "path": "pages/index/index",
       "style": {
-        "navigationBarTitleText": "Homital Lamp",
+        "navigationBarTitleText": "Device details",
         "enablePullDownRefresh": true
       }
     },
+
     {
       "path": "pages/login/register",
       "style": {
@@ -46,7 +87,7 @@
     "backgroundColor": "#F8F8F8",
     "list": [
       {
-        "pagePath": "pages/index/index",
+        "pagePath": "pages/rooms/roomList",
         "text": "Control"
       },
       {

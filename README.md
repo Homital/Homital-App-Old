@@ -4,6 +4,8 @@
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ae8caf56011d4f2fa616e76527677c5f)](https://www.codacy.com/gh/Homital/Homital-App?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Homital/Homital-App&amp;utm_campaign=Badge_Grade)
 
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ae8caf56011d4f2fa616e76527677c5f)](https://www.codacy.com/gh/Homital/Homital-App?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Homital/Homital-App&amp;utm_campaign=Badge_Grade)
+
 ## Project setup
 ```
 npm install

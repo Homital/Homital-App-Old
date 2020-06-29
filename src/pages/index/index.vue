@@ -1,6 +1,6 @@
 <template>
     <view>
-        <view class="uni-padding-wrap uni-common-mt">
+        <!-- <view class="uni-padding-wrap uni-common-mt">
             <view v-if="notloggedin != null && notloggedin">
                 <uni-card
                     title="Log in"
@@ -11,7 +11,9 @@
             </view>
         </view>
 
-        <view v-if="notloggedin != null && !notloggedin">
+        <view v-if="notloggedin != null && !notloggedin"> -->
+
+          <view>
             <view class="uni-padding-wrap uni-common-mt">
                 <view class="uni-textarea uni-common-mt">
                     <textarea :value="res"></textarea>
@@ -42,6 +44,7 @@ export default {
       notloggedin: null,
     };
   },
+  // eslint-disable-next-line vue/no-unused-components
   components: {uniCard},
   async onShow() {
     const tHIS = this;
@@ -195,9 +198,12 @@ export default {
 </script>
 
 <style>
+
+
 .container {
     padding: 20px;
     font-size: 14px;
     line-height: 24px;
+    background-color: #bbff00;
 }
 </style>
