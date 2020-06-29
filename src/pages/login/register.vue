@@ -3,18 +3,23 @@
   <view style="uni-padding-wrap uni-common-mt">
     <view class="inputArea">
       <input v-model="emailAddress" placeholder="Enter your email address"
+      style="width:80%;margin-top:15px;margin-bottom:15px;"
       type="text" class="inputClass" />
     </view>
-        <view class="inputArea">
+    <view class="inputArea">
       <input v-model="username" placeholder="Enter your username"
+      style="width:80%;margin-top:15px;margin-bottom:15px;"
       type="text" class="inputClass" />
     </view>
     <view class="inputArea">
         <input type="number" maxlength="6"
-        placeholder="Enter the 6-digit verification number
-         sent to your email address."
+        placeholder="6-digit verification code"
         class="inputClass" v-model="verificationCode" />
-        <button type="primary" class="inputClass" @tap="_sendVerificationCode"
+    </view>
+        <view class="reg_button">
+        <button type="primary"
+          style="width:80%;margin-top:15px;margin-bottom:15px;"
+          @tap="_sendVerificationCode"
         >Send Verification Code</button>
     </view>
     <view class="inputArea">
@@ -29,12 +34,14 @@
     <!-- <view style="padding: 0 10%;">
       <text style="color: red;">{{message}}</text>
     </view> -->
-    <view class="inputArea">
-      <button style="border-radius:22px;" type="primary"
+    <view class="reg_button">
+      <button style="width:80%;margin-top:20px;margin-bottom:20px;"
+      type="primary"
       @tap="register">Register</button>
     </view>
     <view class="inputArea">
-      <text style="float:right;color:blue;"
+      <!-- style="float:right;color:blue;" -->
+      <text style="width:80%;margin-top:20px;margin-bottom:20px;"
       @click="openAgreement">User Agreement</text>
     </view>
   </view>
@@ -61,6 +68,32 @@ export default {
   },
   methods: {
     _sendVerificationCode() {
+      const tHIS = this;
+      const url = getApp().globalData.base_url + '/auth/user/getotp';
+      console.log('url is :' + url);
+      uni.request({
+        url: getApp().globalData.base_url + '/auth/user/getotp',
+        data: {
+          email: tHIS.emailAddress,
+        },
+        method: 'POST',
+        header: {
+          'content-type': 'application/json',
+        },
+        success: (res) => {
+          console.log('sending verification code...');
+          if (res.statusCode == 200) {
+            console.log('verification code sent successfully');
+          } else {
+            tHIS.error = res.data.error;
+            uni.showToast({
+              icon: 'none',
+              title: res.data.error,
+              duration: 2000,
+            });
+          }
+        },
+      });
       if (this.sendCode.codeTime != 180) {
         return;
       }
@@ -126,10 +159,24 @@ export default {
 </script>
 
 <style>
-  .inputClass {
-    border: 2px solid #ccc;
+  /* .inputClass {
+    border: 1px solid #ccc;
     border-radius: 22px;
     outline: 0;
     padding: 8px 15px;
+    background-color: #585c61;
+  } */
+  .inputClass {
+  padding: 20upx 10%;
+  color: black;
+  border: 1px solid rgb(218, 213, 213);
+  border-radius: 10rpx;
+  margin: 5rpx;
+  outline: 0;
+  background-color: #9ea3a8;
+  opacity: 1;
+  }
+  .reg_button {
+    color: rgb(32, 88, 173);
   }
 </style>

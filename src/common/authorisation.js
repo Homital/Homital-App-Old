@@ -15,7 +15,7 @@ async function requestAcessTokenwrapped(callback, num) {
   let _str = '';
   let successful = false;
   await uni.request({
-    url: 'https://homital.ml:2333/api/auth/user/token',
+    url: 'http://homital.ml:2333/api/auth/user/token',
     data: {
       token: uni.getStorageSync('refresh_token'),
     },
@@ -100,7 +100,7 @@ async function makeAuthenticatedCall(callback, _url, _body, _method, num) {
               uni.setStorageSync('notloggedin', true);
               uni.removeStorageSync('refresh_token');
               uni.removeStorageSync('userinfo');
-              callback({success: false, power: undefined});
+              callback({success: false});
               console.log('ohno howw');
             }
           });

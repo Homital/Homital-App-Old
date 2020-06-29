@@ -2,8 +2,12 @@
 const auth = require('common/authorisation');
 export default {
   globalData: {
-    base_url: 'https://homital.ml:2333/api',
+    base_url: 'http://homital.ml:2333/api',
     access_token: '',
+    room_temp: '',
+    device_temp: '',
+    room_list: [],
+    device_list: [],
   },
   onLaunch: async function() {
     console.log('App Launch');
@@ -29,4 +33,8 @@ export default {
 
 <style>
   /*每个页面公共css */
+  /* body {
+  background-color: #283443;
+  opacity: 0.7;
+  } */
 </style>
