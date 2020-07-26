@@ -2,15 +2,13 @@
   <view class="page">
     <uni-section title="Name your room" type="line"></uni-section>
     <view class="input-body">
-      <input v-model="roomAdded" placeholder="Give it a name :>"
+      <input v-model="newRoomName" placeholder="Give it a new name :>"
       type="text" class="example-body" />
     </view>
     <view class="add_button">
       <button style="width:80%;margin-top:35px;margin-bottom:15px;"
       type="primary"
-      v-bind:loading ='processingAdd'
-      @tap="add_room">{{processingAdd == false? 'Add room'
-                :'adding room'}}</button>
+      @tap="change_room_name">Change name</button>
     </view>
   </view>
 </template>
@@ -24,34 +22,47 @@ export default {
   },
   data() {
     return {
-      roomAdded: '',
-      username: '',
-      processingAdd: false,
+      newRoomName: '',
+      room_id: '',
     };
   },
+  async onShow() {
+    // if (getApp().globalData.room_switched_to_id != '') {
+    console.log('just switched');
+    this.room_id = getApp().globalData.room_switched_to_id;
+    getApp().globalData.request_room_list = true;
+    // getApp().globalData.room_switched_to_id = '';
+    // getApp().globalData.room_list = [];
+    console.log('checking room id gotten @ change roomName:' + this.room_id);
+    // }
+  },
   methods: {
-    async add_room() {
+    async change_room_name() {
+      console.log('trying to change your room name...');
       const tHIS = this;
-      tHIS.processingAdd = true;
 
-      // add room
-      const url = await getApp().globalData.base_url + `/user/rooms`;
+      // add room name
+      const url = await getApp().globalData.base_url +
+      `/user/rooms?uid=${tHIS.room_id}`;
+
       await auth.functions.makeAuthenticatedCall(
           async (res) => {
-            console.log('reached add room');
+            console.log('reached update room');
+            console.log('request successful: ' + res.statusCode == 200);
             if (res.statusCode == 200) {
-              console.log('successfully add room ' + tHIS.roomAdded +
-              ' for user: ' + tHIS.username);
-              // save info to be pushed to list, save time getting whole list
-              getApp().globalData.room_added = tHIS.roomAdded;
-              getApp().globalData.room_id_added = res.data.room_id;
-              getApp().globalData.room_role_added = res.data.role;
-              // // printing to check saved, yes saved so commented out
-              // console.log('print room_id from response:'+res.data.room_id);
-              // console.log('print roomId:'+getApp().globalData.room_id_added);
-              // go back to room list page
-              tHIS.processingAdd = false;
-              uni.navigateBack();
+              console.log('successfully update room ');
+              uni.showToast({
+                icon: 'none',
+                title: 'Room name changed successfully',
+                duration: 2000,
+              });
+              getApp().globalData.room_switched_to = tHIS.newRoomName;
+              getApp().globalData.request_room_list = true;
+              // // try relaunch since room list not updated
+              // uni.navigateBack({delta: 2});
+              uni.reLaunch({
+                url: '../rooms/roomList',
+              });
             } else {
               tHIS.error = res.data.error;
               uni.showToast({
@@ -62,8 +73,8 @@ export default {
             }
           },
           url,
-          {name: tHIS.roomAdded},
-          'POST',
+          {name: tHIS.newRoomName},
+          'PUT',
       );
     },
   },

@@ -11,7 +11,7 @@
                     <button type="primary"
                     v-bind:loading ='loggingOutProcessing'
                     @tap="_logout">{{loggingOutProcessing == false
-                    ? 'log out' :'logging out in progress'}}</button>
+                    ? 'log out' :'logging out'}}</button>
                 </view>
             </view>
         </view>
@@ -88,7 +88,7 @@ export default {
       uni.request({
         url: url,
         data: {
-          token: this.refresh_token,
+          refresh_token: this.refresh_token,
         },
         method: 'DELETE',
         header: {
@@ -104,6 +104,15 @@ export default {
             title: 'You have successfully logged out.',
             duration: 2000,
           });
+          uni.reLaunch({
+            url: '../me/me',
+          });
+        },
+        fail: () => {
+          uni.removeStorageSync('userinfo');
+          uni.removeStorageSync('refresh_token');
+          uni.setStorageSync('notloggedin', true);
+          tHIS.loggingOutProcessing = false;
           uni.reLaunch({
             url: '../me/me',
           });

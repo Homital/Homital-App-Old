@@ -6,30 +6,16 @@
       style="width:80%;margin-top:15px;margin-bottom:15px;"
       type="text" class="inputClass" />
     </view>
-    <view class="inputArea">
-      <input v-model="username" placeholder="Enter your username"
-      style="width:80%;margin-top:15px;margin-bottom:15px;"
-      type="text" class="inputClass" />
-    </view>
-    <view class="inputArea">
-        <input type="number" maxlength="6"
-        placeholder="6-digit verification code"
-        class="inputClass" v-model="verificationCode" />
-    </view>
-        <view class="reg_button">
+    <view class="reg_button">
         <button type="primary"
           style="width:80%;margin-top:15px;margin-bottom:15px;"
           @tap="_sendVerificationCode"
         >Get Verification Code</button>
     </view>
     <view class="inputArea">
-      <input v-model="password" placeholder="Enter your password"
-      type="password"
-      class="inputClass" />
-    </view>
-    <view class="inputArea">
-      <input v-model="reconfirmPassword" placeholder="Enter your password again"
-      type="password" class="inputClass" />
+        <input type="number" maxlength="6"
+        placeholder="6-digit verification code"
+        class="inputClass" v-model="verificationCode" />
     </view>
     <!-- <view style="padding: 0 10%;">
       <text style="color: red;">{{message}}</text>
@@ -37,12 +23,7 @@
     <view class="reg_button">
       <button style="width:80%;margin-top:20px;margin-bottom:20px;"
       type="primary"
-      @tap="register">Register</button>
-    </view>
-    <view class="inputArea">
-      <!-- style="float:right;color:blue;" -->
-      <text style="width:80%;margin-top:20px;margin-bottom:20px;"
-      @click="openAgreement">User Agreement</text>
+      @tap="getPassword">Get Password</button>
     </view>
   </view>
     </view>
@@ -53,7 +34,6 @@ export default {
   data() {
     return {
       emailAddress: '',
-      username: '',
       password: '',
       reconfirmPassword: '',
       verificationCode: '',
@@ -112,53 +92,39 @@ export default {
       1000);
       return false;
     },
-    register() {
+    getPassword() {
       const tHIS = this;
-      const password = tHIS.password;
-      const url = getApp().globalData.base_url + '/auth/user/register';
-      if (!password) {
-        tHIS.message = 'Password cannot be empty';
-        return false;
+      if (!tHIS.verificationCode) {
+        tHIS.message = 'Please enter verification code';
+      } else {
+        uni.request({
+          url: getApp().globalData.base_url +
+                        '/auth/user/fgtpswd',
+          data: {
+            email: tHIS.emailAddress,
+            otp: tHIS.verificationCode,
+          },
+          method: 'POST',
+          header: {
+            'content-type': 'application/json',
+          },
+          success: (res) => {
+            if (res.statusCode == 200) {
+              uni.showToast({
+                icon: 'none',
+                title: 'Successfully obtained new password',
+                duration: 2000,
+              });
+            } else {
+              uni.showToast({
+                icon: 'none',
+                title: res.data.error,
+                duration: 2000,
+              });
+            }
+          },
+        });
       }
-      if (tHIS.password != tHIS.reconfirmPassword) {
-        tHIS.message = 'Passwords don\'t match';
-        return false;
-      }
-      uni.request({
-        url: url,
-        data: {
-          username: tHIS.username,
-          email: tHIS.emailAddress,
-          password: tHIS.password,
-          otp: tHIS.verificationCode,
-        },
-        method: 'POST',
-        header: {
-          'content-type': 'application/json',
-        },
-        success: (res) => {
-          if (res.statusCode == 200) {
-            uni.showToast({
-              title: 'Successfully registered your account.',
-              duration: 2000,
-            });
-          } else {
-            uni.showToast({
-              none: 'none',
-              title: res.data.error,
-              duration: 2000,
-            });
-          }
-        },
-      });
-    },
-    openAgreement() {
-      uni.navigateTo({
-        url: '../login/userAgreement',
-        success: (res) => {},
-        fail: () => {},
-        complete: () => {},
-      });
     },
   },
 };

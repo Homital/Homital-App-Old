@@ -1,57 +1,66 @@
 <template>
-  <view class="page">
-    <uni-section title="Name your room" type="line"></uni-section>
-    <view class="input-body">
-      <input v-model="roomAdded" placeholder="Give it a name :>"
-      type="text" class="example-body" />
-    </view>
-    <view class="add_button">
+  <view>
+    <text class="example-info"
+    >Member name: {{memberName}}</text>
+    <uni-section title="Role" type="line"></uni-section>
+    <uni-list>
+      <uni-list-item :title="role" rightText="change"
+      @click= change_role_type />
+    </uni-list>
+
+    <view class="delete_button">
       <button style="width:80%;margin-top:35px;margin-bottom:15px;"
       type="primary"
-      v-bind:loading ='processingAdd'
-      @tap="add_room">{{processingAdd == false? 'Add room'
-                :'adding room'}}</button>
+      @tap="delete_member">delete member</button>
     </view>
   </view>
 </template>
 
 <script>
-import uniSection from '@/components/uni-section/uni-section.vue';
 const auth = require('../../common/authorisation');
+import uniSection from '@/components/uni-section/uni-section.vue';
+import uniList from '@/components/uni-list/uni-list.vue';
+import uniListItem from '@/components/uni-list-item/uni-list-item.vue';
 export default {
   components: {
     uniSection,
+    uniList,
+    uniListItem,
   },
   data() {
     return {
-      roomAdded: '',
-      username: '',
-      processingAdd: false,
+      memberName: '',
+      role: '',
+      roomId: '',
     };
   },
+  async onShow() {
+    // get current member info
+    this.memberName = getApp().globalData.member_switched_to;
+    this.role = getApp().globalData.member_role_switched_to;
+    this.roomId = getApp().globalData.room_switched_to_id;
+  },
   methods: {
-    async add_room() {
+    change_role_type() {
+      getApp().globalData.room_switched_to_id = this.roomId;
+      uni.navigateTo({
+        // params not used as there are some issues using onLoad
+        url: `./changeUserRole`,
+      });
+    },
+    async delete_member() {
       const tHIS = this;
-      tHIS.processingAdd = true;
-
-      // add room
-      const url = await getApp().globalData.base_url + `/user/rooms`;
+      const url = getApp().globalData.base_url +
+      `/user/rooms/members?uid=${this.roomId}&username=${this.memberName}`;
       await auth.functions.makeAuthenticatedCall(
           async (res) => {
-            console.log('reached add room');
+            console.log('reached delete member');
             if (res.statusCode == 200) {
-              console.log('successfully add room ' + tHIS.roomAdded +
-              ' for user: ' + tHIS.username);
-              // save info to be pushed to list, save time getting whole list
-              getApp().globalData.room_added = tHIS.roomAdded;
-              getApp().globalData.room_id_added = res.data.room_id;
-              getApp().globalData.room_role_added = res.data.role;
-              // // printing to check saved, yes saved so commented out
-              // console.log('print room_id from response:'+res.data.room_id);
-              // console.log('print roomId:'+getApp().globalData.room_id_added);
-              // go back to room list page
-              tHIS.processingAdd = false;
-              uni.navigateBack();
+              console.log('successfully delete member '+ tHIS.memberName);
+              // tell room list page to regenerate room list
+              // getApp().globalData.member_changed = true;
+              // go back to user list page
+              uni.navigateBack({delta: 1});
             } else {
               tHIS.error = res.data.error;
               uni.showToast({
@@ -62,8 +71,8 @@ export default {
             }
           },
           url,
-          {name: tHIS.roomAdded},
-          'POST',
+          {},
+          'DELETE',
       );
     },
   },
@@ -81,7 +90,22 @@ export default {
     height: auto;
   }
 
-  .combo-body {
+  view {
+    font-size: 14px;
+    line-height: inherit;
+  }
+
+  .example {
+    padding: 0 15px 15px;
+  }
+
+  .example-info {
+    padding: 15px;
+    color: #3b4144;
+    background: #ffffff;
+  }
+
+  .example-body {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
@@ -139,17 +163,5 @@ export default {
 
   .word-btn--hover {
     background-color: #4ca2ff;
-  }
-
-
-  .input-body {
-    padding: 10px 12px;
-    background-color: #FFFFFF;
-  }
-
-  .result-box {
-    text-align: center;
-    padding: 0px 0px;
-    font-size: 16px;
   }
 </style>

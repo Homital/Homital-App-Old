@@ -1,16 +1,14 @@
 <template>
   <view class="page">
-    <uni-section title="Name your room" type="line"></uni-section>
+    <uni-section title="Name your device" type="line"></uni-section>
     <view class="input-body">
-      <input v-model="roomAdded" placeholder="Give it a name :>"
+      <input v-model="newDeviceName" placeholder="Give it a new name :>"
       type="text" class="example-body" />
     </view>
     <view class="add_button">
       <button style="width:80%;margin-top:35px;margin-bottom:15px;"
       type="primary"
-      v-bind:loading ='processingAdd'
-      @tap="add_room">{{processingAdd == false? 'Add room'
-                :'adding room'}}</button>
+      @tap="change_device_name">Change name</button>
     </view>
   </view>
 </template>
@@ -24,34 +22,50 @@ export default {
   },
   data() {
     return {
-      roomAdded: '',
-      username: '',
-      processingAdd: false,
+      newDeviceName: '',
+      roomId: '',
+      oldDeviceName: '',
     };
   },
-  methods: {
-    async add_room() {
-      const tHIS = this;
-      tHIS.processingAdd = true;
+  async onShow() {
+    // if (getApp().globalData.room_switched_to_id != '') {
+    console.log('just switched');
+    this.roomId = getApp().globalData.room_switched_to_id;
+    this.oldDeviceName = getApp().globalData.device_switched_to;
 
-      // add room
-      const url = await getApp().globalData.base_url + `/user/rooms`;
+    getApp().globalData.request_device_list = true;
+    // getApp().globalData.room_switched_to_id = '';
+    // getApp().globalData.room_list = [];
+    console.log('checking room id gotten @ change device Name:' + this.roomId);
+    // }
+  },
+  methods: {
+    async change_device_name() {
+      console.log('trying to change your device name...');
+      const tHIS = this;
+
+      // add device name
+      const url = await getApp().globalData.base_url +
+      `/user/rooms/devices?uid=${tHIS.roomId}`;
+
       await auth.functions.makeAuthenticatedCall(
           async (res) => {
-            console.log('reached add room');
+            console.log('reached update device');
+            console.log('request successful: ' + res.statusCode == 200);
             if (res.statusCode == 200) {
-              console.log('successfully add room ' + tHIS.roomAdded +
-              ' for user: ' + tHIS.username);
-              // save info to be pushed to list, save time getting whole list
-              getApp().globalData.room_added = tHIS.roomAdded;
-              getApp().globalData.room_id_added = res.data.room_id;
-              getApp().globalData.room_role_added = res.data.role;
-              // // printing to check saved, yes saved so commented out
-              // console.log('print room_id from response:'+res.data.room_id);
-              // console.log('print roomId:'+getApp().globalData.room_id_added);
-              // go back to room list page
-              tHIS.processingAdd = false;
-              uni.navigateBack();
+              console.log('successfully update device ');
+              uni.showToast({
+                icon: 'none',
+                title: 'Device name changed successfully',
+                duration: 2000,
+              });
+              getApp().globalData.device_switched_to = tHIS.newDeviceName;
+              getApp().globalData.request_device_list = true;
+              // // try relaunch since room list not updated
+              uni.navigateBack({delta: 2});
+              // uni.reLaunch({
+              //   url: '../devices/deviceList',
+              // });
             } else {
               tHIS.error = res.data.error;
               uni.showToast({
@@ -62,8 +76,11 @@ export default {
             }
           },
           url,
-          {name: tHIS.roomAdded},
-          'POST',
+          {
+            old_name: tHIS.oldDeviceName,
+            new_name: tHIS.newDeviceName,
+          },
+          'PUT',
       );
     },
   },

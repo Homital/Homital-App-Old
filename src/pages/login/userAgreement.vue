@@ -1,5 +1,5 @@
 <template>
-  <view>User Agreement</view>
+  <view>This is our User Agreement.</view>
 </template>
 
 <script>
