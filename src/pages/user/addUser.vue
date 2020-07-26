@@ -1,68 +1,79 @@
 <template>
   <view class="page">
-    <uni-section title="Name your room" type="line"></uni-section>
+    <uni-section title="Shared username" type="line"></uni-section>
     <view class="input-body">
-      <input v-model="roomAdded" placeholder="Give it a name :>"
+      <input v-model="memeberName" placeholder="Enter correct username"
+      type="text" class="example-body" />
+    </view>
+
+    <uni-section title="Member role" type="line"></uni-section>
+    <view class="combo-body">
+      <uni-combox label="Member Role" labelWidth="150px" :candidates="choices"
+      placeholder="Select" v-model="role"
+      emptyTips="Role type not supported"></uni-combox>
+    <uni-section title="Room name" type="line"></uni-section>
+    <view class="input-body">
+      <input v-model="roomName" placeholder="Enter room name"
       type="text" class="example-body" />
     </view>
     <view class="add_button">
       <button style="width:80%;margin-top:35px;margin-bottom:15px;"
       type="primary"
-      v-bind:loading ='processingAdd'
-      @tap="add_room">{{processingAdd == false? 'Add room'
-                :'adding room'}}</button>
+      @tap="add_member">Add member</button>
     </view>
+  </view>
   </view>
 </template>
 
 <script>
-import uniSection from '@/components/uni-section/uni-section.vue';
 const auth = require('../../common/authorisation');
+import uniCombox from '@/components/uni-combox/uni-combox.vue';
+import uniSection from '@/components/uni-section/uni-section.vue';
 export default {
   components: {
+    uniCombox,
     uniSection,
   },
   data() {
     return {
-      roomAdded: '',
-      username: '',
-      processingAdd: false,
+      role: '',
+      roomId: '',
+      choices: ['owner', 'member', 'admin', 'viewer'],
+      memeberName: '',
+      roomName: '',
     };
   },
+  onShow() {
+    this.roomId = getApp().globalData.room_switched_to_id;
+  },
   methods: {
-    async add_room() {
+    async add_member() {
       const tHIS = this;
-      tHIS.processingAdd = true;
-
-      // add room
-      const url = await getApp().globalData.base_url + `/user/rooms`;
+      console.log('printing room_id at add user: ' + this.roomId);
+      const url =
+      getApp().globalData.base_url + `/user/rooms/members?uid=${this.roomId}`;
       await auth.functions.makeAuthenticatedCall(
           async (res) => {
-            console.log('reached add room');
+            console.log('reached add user');
             if (res.statusCode == 200) {
-              console.log('successfully add room ' + tHIS.roomAdded +
-              ' for user: ' + tHIS.username);
-              // save info to be pushed to list, save time getting whole list
-              getApp().globalData.room_added = tHIS.roomAdded;
-              getApp().globalData.room_id_added = res.data.room_id;
-              getApp().globalData.room_role_added = res.data.role;
-              // // printing to check saved, yes saved so commented out
-              // console.log('print room_id from response:'+res.data.room_id);
-              // console.log('print roomId:'+getApp().globalData.room_id_added);
-              // go back to room list page
-              tHIS.processingAdd = false;
+              console.log('successfully add room ' + tHIS.roomName +
+              ' for member: ' + tHIS.memberName);
+              getApp().globalData.member_changed = true;
               uni.navigateBack();
             } else {
-              tHIS.error = res.data.error;
               uni.showToast({
                 icon: 'none',
-                title: tHIS.error,
+                title: res.data.error,
                 duration: 2000,
               });
             }
           },
           url,
-          {name: tHIS.roomAdded},
+          {
+            username: tHIS.memeberName,
+            role: tHIS.role,
+            name: tHIS.roomName,
+          },
           'POST',
       );
     },
@@ -71,6 +82,7 @@ export default {
 </script>
 
 <style>
+
   /* #ifndef APP-NVUE */
   page {
     display: flex;

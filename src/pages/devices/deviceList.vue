@@ -1,6 +1,6 @@
 <template>
     <view>
-        <view class="uni-padding-wrap uni-common-mt">
+        <!-- <view class="uni-padding-wrap uni-common-mt">
             <view v-if="notloggedin != null && notloggedin">
                 <uni-card
                     title="Log in"
@@ -9,16 +9,16 @@
                     @click="_directToLogin"
                 >Log in to check and control your devices.</uni-card>
             </view>
-        </view>
+        </view> -->
 <!-- <view v-if="notloggedin != null && !notloggedin &&
 displayList != null && !displayList"> -->
 
-<view v-if="notloggedin != null && !notloggedin">
+<!-- <view v-if="notloggedin != null && !notloggedin "> -->
 
-  <!-- <view> -->
+  <view>
   <view class="warp">
     <!-- <text class="example-info">Click to control your devices</text> -->
-    <uni-section :title="`${username}'s ${room}`" type="line"></uni-section>
+    <uni-section :title="`${username}'s ${roomName}`" type="line"></uni-section>
     <view class="example-body">
       <view v-if="deviceList.length!==0" class="grid-dynamic-box">
         <uni-grid :column="3" :highlight="true" @change="change">
@@ -35,6 +35,16 @@ displayList != null && !displayList"> -->
     </view>
   </view>
   </view>
+        <!-- <view class="reg_button">
+      <button style="width:90%;margin-bottom:20px;"
+      type="primary"
+      @tap="deleteRoom">delete this room</button>
+    </view> -->
+                        <view class="input">
+      <!-- style="float:right;color:blue;" -->
+            <text style="width:80%;margin-top:20px;margin-bottom:20px;"
+      @click="_getRoomDetails">Click to view room details</text>
+    </view>
 </view>
 </template>
 
@@ -42,28 +52,22 @@ displayList != null && !displayList"> -->
 import uniSection from '@/components/uni-section/uni-section.vue';
 import uniGrid from '@/components/uni-grid/uni-grid.vue';
 import uniGridItem from '@/components/uni-grid-item/uni-grid-item.vue';
-// import uniBadge from '@/components/uni-badge/uni-badge.vue';
+const auth = require('../../common/authorisation');
 export default {
   components: {
     uniSection,
     uniGrid,
     uniGridItem,
-    // uniBadge,
   },
   data() {
     return {
       deviceList: [],
       username: '',
-      displayList: null,
-      notloggedin: null,
       deviceAdded: '',
-      room: '',
+      roomName: 'room',
+      roomId: '',
+      roomRole: '',
     };
-  },
-  onLoad: (valPassed) => {
-    console.log(valPassed.room);
-    // eslint-disable-next-line no-invalid-this
-    this.room = valPassed.room;
   },
   async onShow() {
     const tHIS = this;
@@ -74,94 +78,117 @@ export default {
     this.username = await uni.getStorageSync('userinfo');
     console.log('after userinfo: ', tHIS.username);
 
-    // check if a new device was just added
+    console.log('print id @global on show ' +
+    getApp().globalData.room_switched_to_id);
+    this.roomName = getApp().globalData.room_switched_to;
+    this.roomId = getApp().globalData.room_switched_to_id;
+    this.roomRole = getApp().globalData.room_switched_to_role;
 
-    // tHIS.deviceAdded = uni.getStorageSync(`${tHIS.username}_deviceAdded`);
-    tHIS.deviceAdded = getApp().globalData.device_temp;
-    console.log('printing name of temp device added ' +
-    getApp().globalData.device_temp);
-
-    tHIS.deviceList = getApp().globalData.device_list;
-
-    if (tHIS.deviceList == undefined) {
-      tHIS.deviceList = [];
-    }
-
-    console.log('checking account status');
-    console.log('before' + tHIS.notloggedin);
-    tHIS.notloggedin = uni.getStorageSync('notloggedin');
-    console.log('after' + tHIS.notloggedin);
-
-
-    if (tHIS.deviceAdded != '') {
-      await tHIS.deviceList.push({
-        url: `/static/c${this.deviceList.length+1}.png`,
-        text: `${tHIS.deviceAdded}`,
-        color: this.deviceList.length % 2 === 0 ? '#f5f5f5' : '#fff',
-      });
-      // uni.setStorageSync(`${tHIS.username}_deviceAdded`, '');
-      getApp().globalData.device_list = tHIS.deviceList;
-      tHIS.displayList = true;
-    }
-  },
-  async onLaunch() {
-    // to get this user's list of devices
-    const listUrl =
-      getApp().globalData.base_url + `/user/${this.username}/devices`;
-    await uni.request({
-      url: listUrl,
-      data: {
-      },
-      method: 'GET',
-      success: async (res) => {
-        console.log('successfully obtain list of devices for user: ' +
+    // get device list
+    // console.log('request_device_list set to true' +
+    // getApp().globalData.request_device_list);
+    // if (getApp().globalData.request_device_list) {
+    tHIS.deviceList = [];
+    console.log('trying to get device list...');
+    const listUrl = getApp().globalData.base_url +
+      `/user/rooms/devices?uid=${this.roomId}`;
+    await auth.functions.makeAuthenticatedCall(
+        async (res) => {
+          console.log('reached get device list');
+          if (res.statusCode == 200) {
+            console.log('successfully obtain list of devices for user: ' +
          tHIS.username);
-        if (res.statusCode == 200) {
-          tHIS.displayList = true;
-          const dbList = res.data;
-          for (let i = 0; i < dbList; i++) {
-            const object = dbList[i];
-            const devicename = object.getString('name');
-            console.log('printing name of device ' + devicename);
-            await tHIS.deviceList.push({
-              url: `/static/c${tHIS.deviceList.length+1}.png`,
-              text: `${devicename}`,
-              color: tHIS.deviceList.length % 2 === 0 ? '#f5f5f5' : '#fff',
+            const dbList = res.data;
+            console.log('dbList length is ' + dbList.length);
+            for (let i = 0; i < dbList.length; i++) {
+              const object = dbList[i];
+              const deviceName = object['name'];
+              console.log('printing device names' + deviceName);
+              const type = object['type'];
+              console.log('printing device types: ' + type);
+              await tHIS.deviceList.push({
+                url: `/static/c${tHIS.deviceList.length+1}.png`,
+                text: deviceName,
+                color: tHIS.deviceList.length % 2 === 0 ? '#f5f5f5' : '#fff',
+                type: type,
+              });
+            }
+            // next time no need to get from db, unless did delete
+            getApp().globalData.request_device_list = false;
+          } else if (res.statusCode == 500) {
+            tHIS.deviceList = [];
+          } else {
+            uni.showToast({
+              icon: 'none',
+              title: res.data.error,
+              duration: 2000,
             });
           }
-          if (tHIS.deviceList == undefined) {
-            tHIS.deviceList = [];
-          }
-        } else {
-          tHIS.displayList = false;
-          tHIS.error = res.data.error;
-          uni.showToast({
-            icon: 'none',
-            title: tHIS.error,
-            duration: 2000,
-          });
-        }
-      },
-    });
-    console.log('STAR STAR printing device list' + tHIS.deviceList);
+        },
+        listUrl,
+        {},
+        'GET',
+    ); // finish get request
+    // }
 
-    if (tHIS.deviceList == undefined || tHIS.deviceList.length == 0
-    // || (tHIS.deviceList.length != 0 &&
-    // tHIS.deviceList[0]['text'] == undefined)
-    ) {
-      console.log('reached cond tHIS.deviceList == undefined');
-      tHIS.deviceList = [];
-      tHIS.displayList = true;
-    }
+
+    // check if a new device was just added
+    // if (getApp().globalData.device_added != '') {
+    //   console.log('yes a new device was just added:)');
+    //   tHIS.deviceAdded = getApp().globalData.device_added;
+    //   tHIS.deviceTypeAdded = getApp().globalData.device_type_added;
+    //   await tHIS.deviceList.push({
+    //     url: `/static/c${this.deviceList.length+1}.png`,
+    //     text: `${tHIS.deviceAdded}`,
+    //     color: tHIS.deviceList.length % 2 === 0 ? '#f5f5f5' : '#fff',
+    //     type: tHIS.deviceTypeAdded,
+    //   });
+    //   getApp().globalData.device_added = '';
+    //   getApp().globalData.device_type_added = '';
+    // }
   },
   methods: {
     change(e) {
       let {
+        // eslint-disable-next-line prefer-const
         index,
       } = e.detail;
-      // this.roomList[index].badge && this.roomList[index].badge++;
+
+      // const deviceClicked = this.roomList[index]['text'];
+      // const roomClickedId = this.roomList[index]['room_id'];
+      // const roomClickedRole = this.roomList[index]['role'];
+
+      // uni.showToast({
+      //   title: `Click to view room ${roomClicked}`,
+      //   icon: 'none',
+      // });
+
+
+      // getApp().globalData.room_switched_to = roomClicked;
+      // getApp().globalData.room_switched_to_id = roomClickedId;
+      // getApp().globalData.room_switched_to_role = roomClickedRole;
+
+      // console.log('printing roomClicked id @change ' + roomClickedId);
+      // console.log('printing id @ change ' +
+      // getApp().globalData.room_switched_to_id);
+
+
+      // // // navigate to device list page, or redirect?
+      // uni.navigateTo({
+      //   // list param not used
+      //   url: `../index/index?room=${deviceClicked}&list=roomList`,
+      // });
+
+      // //redirect to device list page
+      // uni.redirectTo({
+      //   url: `../devices/deviceList?room=${roomClicked}&list=roomList`,
+      // });
 
       const deviceClicked = this.deviceList[index]['text'];
+      const deviceTypeClicked = this.deviceList[index]['type'];
+
+      getApp().globalData.device_switched_to = deviceClicked;
+      getApp().globalData.device_type_switched_to = deviceTypeClicked;
 
       uni.showToast({
         title: `Click to view device ${deviceClicked}`,
@@ -170,7 +197,7 @@ export default {
 
       // direct to device details page
       uni.redirectTo({
-        url: `../index/index?room=${deviceClicked}&list=roomList`,
+        url: `../devices/deviceControl`,
       });
     },
     add() {
@@ -181,11 +208,6 @@ export default {
         uni.navigateTo({
           // list param not used
           url: `./deviceAdd`,
-          success: async (res) => {
-          },
-          fail: () => {},
-          complete: () => {
-          },
         });
       } else {
         uni.showToast({
@@ -196,6 +218,24 @@ export default {
     },
     del() {
       this.deviceList.splice(this.deviceList.length - 1, 1);
+    },
+    _getRoomDetails() {
+      const tHIS = this;
+      // console.log('trying to navigate...');
+      // getApp().globalData.room_switched_to = this.room;
+      // getApp().globalData.room_switched_to_id = this.room_id;
+      // navigate to room details page
+      uni.navigateTo({
+        // list param not used
+        url: `../rooms/roomDetails?room=${tHIS.room}&list=roomList`,
+        success: async (res) => {
+          // tHIS.roomList =
+          //   await uni.getStorageSync(`${tHIS.username}_roomList`);
+        },
+        fail: () => {},
+        complete: () => {
+        },
+      });
     },
   },
 };

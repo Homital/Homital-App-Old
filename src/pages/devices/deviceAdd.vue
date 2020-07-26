@@ -1,8 +1,8 @@
 <template>
   <view class="page">
-    <uni-section title="Type in device type" type="line"></uni-section>
+    <uni-section title="Select in device type" type="line"></uni-section>
     <view class="combo-body">
-      <uni-combox label="Device Type" labelWidth="150px" :candidates="choices"
+      <uni-combox label="Type" labelWidth="50px" :candidates="choices"
       placeholder="Select" v-model="deviceType"
       emptyTips="Device type not supported"></uni-combox>
       <!-- <view class="result-box">
@@ -17,7 +17,9 @@
     <view class="add_button">
       <button style="width:80%;margin-top:35px;margin-bottom:15px;"
       type="primary"
-      @tap="add_device">Add this device</button>
+      v-bind:loading ='processingAdd'
+      @tap="add_device">{{processingAdd == false? 'Add this device'
+                :'adding device'}}</button>
     </view>
   </view>
 </template>
@@ -25,6 +27,7 @@
 <script>
 import uniCombox from '@/components/uni-combox/uni-combox.vue';
 import uniSection from '@/components/uni-section/uni-section.vue';
+const auth = require('../../common/authorisation');
 export default {
   components: {
     uniCombox,
@@ -32,63 +35,52 @@ export default {
   },
   data() {
     return {
-      choices: ['lamp', 'plug', '...'],
+      choices: ['homital-light', 'homital-usb-adapter'],
       deviceType: '',
       deviceName: '',
-      room: '',
+      roomId: '',
+      processingAdd: false,
     };
   },
-  onLoad: (valFromDeviceList) => {
-    // eslint-disable-next-line no-invalid-this
-    const tHIS = this;
-    tHIS.room = valFromDeviceList.room;
-    console.log('valFromDeviceList.room = ' + valFromDeviceList.room);
+  onShow() {
+    this.roomId = getApp().globalData.room_switched_to_id;
   },
   methods: {
-    add_device() {
+    async add_device() {
       const tHIS = this;
+      tHIS.processingAdd = true;
 
-      // // add device name
-      // const url = getApp().globalData.base_url +
-      // `/user/${tHIS.username}/rooms/${tHIS.room}/devices`;
-      // // post
-      // // given deviceType & deviceName
-      // uni.request({
-      //   url: url,
-      //   data: {
-      //     type: deviceType,
-      //     name: deviceName,
-      //     room: room,
-      //   },
-      //   method: 'POST',
-      //   header: {
-      //     'content-type': 'application/json',
-      //   },
-      //   success: (res) => {
-      //     if (res.statusCode == 200) {
-      //       uni.showToast({
-      //         title: 'Your device ' + tHIS.deviceName +
-      //           ' is successfully added',
-      //         duration: 2000,
-      //       });
-      //       getApp().globalData.device_temp = tHIS.deviceName;
-      //       console.log('printing to check stored temp name' +
-      // getApp().globalData.device_temp);
-      //       uni.navigateBack();
-      //     } else {
-      //       tHIS.error = res.data.error;
-      //       uni.showToast({
-      //         icon: 'none',
-      //         title: res.data.error,
-      //         duration: 2000,
-      //       });
-      //     }
-      //   },
-      // });
-      getApp().globalData.device_temp = tHIS.deviceName;
-      console.log('printing to check stored device name' +
-      getApp().globalData.device_temp);
-      uni.navigateBack();
+      const url = getApp().globalData.base_url +
+      `/user/rooms/devices?uid=${tHIS.roomId}`;
+      await auth.functions.makeAuthenticatedCall(
+          async (res) => {
+            console.log('reached add device');
+            if (res.statusCode == 200) {
+              console.log('successfully add device ' + tHIS.deviceName +
+              ' of type: ' + tHIS.deviceType);
+              // save info to be pushed to list, save time getting whole list
+              getApp().globalData.device_added = tHIS.deviceName;
+              getApp().globalData.device_type_added = tHIS.deviceType;
+              tHIS.processingAdd = false;
+
+              // go back to device list page
+              uni.navigateBack();
+            } else {
+              tHIS.error = res.data.error;
+              uni.showToast({
+                icon: 'none',
+                title: tHIS.error,
+                duration: 2000,
+              });
+            }
+          },
+          url,
+          {
+            type: tHIS.deviceType,
+            name: tHIS.deviceName,
+          },
+          'POST',
+      );
     },
   },
 };

@@ -21,6 +21,7 @@
                 <view class="uni-btn-v uni-common-mt">
                     <button
                         @click="_request"
+                        style="width:80%;margin-top:35px;margin-bottom:15px;"
                         v-bind:loading="status == null ? true : false"
                         v-bind:type="status ? 'primary' : 'default'"
                     >{{status == null? 'fetching light status' : status
@@ -41,56 +42,51 @@ export default {
       res: '',
       loading: false,
       haha: 'warn',
-      notloggedin: null,
+      // notloggedin: null,
     };
   },
   // eslint-disable-next-line vue/no-unused-components
   components: {uniCard},
   async onShow() {
     const tHIS = this;
-    tHIS.notloggedin = null;
+    // tHIS.notloggedin = null;
     tHIS.status = null;
 
-    console.log('checking account status');
-    console.log('before' + tHIS.notloggedin);
-    tHIS.notloggedin = uni.getStorageSync('notloggedin');
-    console.log('after' + tHIS.notloggedin);
+    // console.log('checking account status');
+    // console.log('before' + tHIS.notloggedin);
+    // tHIS.notloggedin = uni.getStorageSync('notloggedin');
+    // console.log('after' + tHIS.notloggedin);
 
     const access = await getApp().globalData.access_token;
     console.log('printing access token just after page: ' + access);
 
-    console.log('ok everything begins');
-
-    if (!tHIS.notloggedin) {
-      console.log('reached else');
-      auth.functions.makeAuthenticatedCall(
-          (resData) => {
-            console.log('reached resData on/off');
-            console.log(resData);
-            console.log(resData.success);
-            if (resData.success) {
-              tHIS.status = resData.status.power;
-              tHIS.haha = tHIS.status ? 'primary' : 'default';
-            } else {
-              console.log('pos after ohhno howw');
-              tHIS.notloggedin = true;
-              uni.setStorageSync('notloggedin', true);
-              uni.removeStorageSync('refresh_token');
-              uni.removeStorageSync('userinfo');
-              uni.showToast({
-                icon: 'none',
-                title: 'Your token has already expired. Please log in again.',
-                duration: 2000,
-              });
-            }
-          },
-          getApp().globalData.base_url +
+    // request for light status
+    // to add, if device type is light
+    auth.functions.makeAuthenticatedCall(
+        (res) => {
+          console.log('reached light status callback, resData on/off');
+          console.log('request successful: ' + res.statusCode == 200);
+          if (res.statusCode == 200) {
+            tHIS.status = resData.status.power;
+            tHIS.haha = tHIS.status ? 'primary' : 'default';
+          } else {
+            console.log('request not processed, prompt to login again');
+            tHIS.notloggedin = true;
+            uni.setStorageSync('notloggedin', true);
+            uni.removeStorageSync('refresh_token');
+            uni.removeStorageSync('userinfo');
+            uni.showToast({
+              icon: 'none',
+              title: 'Light status can\'t be obtained. Please log in again.',
+              duration: 2000,
+            });
+          }
+        },
+        getApp().globalData.base_url +
                         '/user/alice/livingroom/lamp',
-          {},
-          'GET',
-          1,
-      );
-    }
+        {},
+        'GET',
+    );
   },
   async onPullDownRefresh() {
     _refresh();
@@ -148,50 +144,45 @@ export default {
       });
     },
     async _refresh() {
-      console.log('refresh method');
       const tHIS = this;
-      tHIS.notloggedin = null;
+      // tHIS.notloggedin = null;
       tHIS.status = null;
 
-      console.log('checking account status');
-      console.log('before' + tHIS.notloggedin);
-      tHIS.notloggedin = uni.getStorageSync('notloggedin');
-      console.log('after' + tHIS.notloggedin);
+      // console.log('checking account status');
+      // console.log('before' + tHIS.notloggedin);
+      // tHIS.notloggedin = uni.getStorageSync('notloggedin');
+      // console.log('after' + tHIS.notloggedin);
 
       const access = await getApp().globalData.access_token;
       console.log('printing access token just after page: ' + access);
 
-      console.log('ok everything begins in refresh');
-
-      if (!tHIS.notloggedin) {
-        console.log('reached else');
-        auth.functions.makeAuthenticatedCall(
-            (resData) => {
-              console.log('reached resData on/off');
-              console.log(resData);
-              console.log(resData.success);
-              if (resData.success) {
-                tHIS.status = resData.status.power;
-                tHIS.haha = tHIS.status ? 'primary' : 'default';
-              } else {
-                uni.setStorageSync('notloggedin', true);
-                uni.removeStorageSync('refresh_token');
-                uni.removeStorageSync('userinfo');
-                uni.showToast({
-                  icon: 'none',
-                  title: 'Your token has already expired. Please log in again.',
-                  duration: 2000,
-                });
-                _refresh();
-              }
-            },
-            getApp().globalData.base_url +
+      // request for light status
+      // to add, if device type is light
+      auth.functions.makeAuthenticatedCall(
+          (res) => {
+            console.log('reached light status callback, resData on/off');
+            console.log('request successful: ' + res.statusCode == 200);
+            if (res.statusCode == 200) {
+              tHIS.status = resData.status.power;
+              tHIS.haha = tHIS.status ? 'primary' : 'default';
+            } else {
+              console.log('request not processed, prompt to login again');
+              tHIS.notloggedin = true;
+              uni.setStorageSync('notloggedin', true);
+              uni.removeStorageSync('refresh_token');
+              uni.removeStorageSync('userinfo');
+              uni.showToast({
+                icon: 'none',
+                title: 'Light status can\'t be obtained. Please log in again.',
+                duration: 2000,
+              });
+            }
+          },
+          getApp().globalData.base_url +
                         '/user/alice/livingroom/lamp',
-            {},
-            'GET',
-            1,
-        );
-      }
+          {},
+          'GET',
+      );
     },
   },
 };

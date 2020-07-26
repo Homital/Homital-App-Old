@@ -9,37 +9,38 @@ function requestAcessToken(callback) {
 /**
  * requiring access token
  * @param {*} callback callback
- * @param {*} num num of times
+ * @param {*} num num of times tried
  */
 async function requestAcessTokenwrapped(callback, num) {
-  let _str = '';
-  let successful = false;
+  const refreshToken = await uni.getStorageSync('refresh_token');
   await uni.request({
-    url: 'http://homital.ml:2333/api/auth/user/token',
+    url: getApp().globalData.base_url + '/auth/user/token',
     data: {
-      token: uni.getStorageSync('refresh_token'),
+      refresh_token: refreshToken,
     },
     method: 'POST',
     header: {
       'content-type': 'application/json',
     },
     success: (res) => {
-      if (res.data.success) {
+      if (res.statusCode == 200) {
         console.log('reached1');
-        successful = true;
-        _str = res.data.accessToken;
-        console.log('printing access token when first saved :' + _str);
-        getApp().globalData.accessToken = _str;
-        const checktoken = getApp().globalData.accessToken;
-        console.log('printing again after saved : ' + checktoken);
+        console.log(
+            'printing access token when first saved :' + res.data.access_token);
+        getApp().globalData.access_token = res.data.access_token;
+        console.log('printing again after saved : ' +
+        getApp().globalData.access_token);
         callback(true);
-        return;
+        return true;
       } else {
-        console.log('reached2');
-        console.log('res: ', res.data);
-        _str = res.data.error;
-        callback(false);
-        return;
+        console.log(
+            'failed to get access token in 1 attempt, let\'s try again');
+        if (num > 0) {
+          requestAcessTokenwrapped(callback, num - 1);
+        } else {
+          callback(false);
+          return false;
+        }
       }
     },
     fail: (res) => {
@@ -48,11 +49,21 @@ async function requestAcessTokenwrapped(callback, num) {
         requestAcessTokenwrapped(callback, num - 1);
       } else {
         callback(false);
+        return false;
       }
-      return;
     },
   });
-  return successful;
+}
+
+/**
+ * Wrapper for making authenticated call
+ * @param {*} callback callback
+ * @param {*} _url request body
+ * @param {*} _body request body
+ * @param {*} _method request method
+ */
+async function makeAuthenticatedCall(callback, _url, _body, _method) {
+  makeAuthenticatedCallWrapped(callback, _url, _body, _method, 1);
 }
 
 /**
@@ -63,11 +74,12 @@ async function requestAcessTokenwrapped(callback, num) {
  * @param {*} _method request method
  * @param {*} num num of times
  */
-async function makeAuthenticatedCall(callback, _url, _body, _method, num) {
-  const accessToken = await getApp().globalData.accessToken;
+async function makeAuthenticatedCallWrapped(
+    callback, _url, _body, _method, num) {
+  const accessToken = await getApp().globalData.access_token;
   console.log('printing access token before request: ' + accessToken);
 
-  uni.request({
+  await uni.request({
     url: _url,
     data: _body,
     method: _method,
@@ -75,22 +87,18 @@ async function makeAuthenticatedCall(callback, _url, _body, _method, num) {
       'Authorization': 'Bearer ' + accessToken,
     },
     success: async (res) => {
-      const suc = res.data.success;
-      console.log('request sent suc : ' + suc);
-
-      if (res.data.success) {
-        console.log('finally succeeded');
-        callback(res.data);
+      if (res.statusCode == 200) {
+        console.log('request sent suc : true');
+        callback(res);
       } else {
-        const err = res.data.error;
-        console.log('ur error is : ' + err);
-
+        console.log('request sent suc : false');
         if (num > 0) {
           console.log('ok access token was not ok, let\'s try again');
           await requestAcessToken(async (success) => {
             if (success) {
-              console.log('yayy access token gotten');
-              makeAuthenticatedCall(callback, _url, _body, _method, num - 1);
+              console.log('A new access token gotten, making second request');
+              makeAuthenticatedCallWrapped(
+                  callback, _url, _body, _method, num - 1);
             } else {
               await uni.showToast({
                 icon: 'none',
@@ -100,45 +108,50 @@ async function makeAuthenticatedCall(callback, _url, _body, _method, num) {
               uni.setStorageSync('notloggedin', true);
               uni.removeStorageSync('refresh_token');
               uni.removeStorageSync('userinfo');
-              callback({success: false});
-              console.log('ohno howw');
+              callback(res);
+              console.log('cannot get access token in 2 attempts, ' +
+              'prompt user to log in again for a new refresh_token');
             }
           });
         } else {
-          uni.showToast({
-            icon: 'none',
-            title: 'Your request cannot be processed',
-            duration: 2000,
-          });
+          // uni.showToast({
+          //   icon: 'none',
+          //   title: 'Your request cannot be processed',
+          //   duration: 2000,
+          // });
+          callback(res);
+          console.log('request not successful after 2 attempts');
         }
       }
     },
     fail: async (res) => {
-      console.log('failed to get light status');
+      console.log('no response received');
       console.log('may have gotten empty response, let\'s retry');
-      const newAccessToken = await getApp().globalData.accessToken;
-      await uni.request({
-        url: _url,
-        data: _body,
-        method: _method,
-        header: {
-          'Authorization': 'Bearer ' + newAccessToken,
-        },
-        success: async (res) => {
-          const suc = res.data.success;
-          console.log('request sent suc : ' + suc);
+      makeAuthenticatedCallWrapped(
+          callback, _url, _body, _method, num - 1);
+      // const newAccessToken = await getApp().globalData.accessToken;
+      // await uni.request({
+      //   url: _url,
+      //   data: _body,
+      //   method: _method,
+      //   header: {
+      //     'Authorization': 'Bearer ' + newAccessToken,
+      //   },
+      //   success: async (res) => {
+      //     const suc = res.data.success;
+      //     console.log('request sent suc : ' + suc);
 
-          if (res.data.success) {
-            console.log('finally succeeded');
-            callback(res.data);
-          } else {
-            console.log('reached but res.data.success = false :(');
-          }
-        },
-        fail: (res) => {
-          console.log('why second time still fail, hopeless alr');
-        },
-      });
+      //     if (res.data.success) {
+      //       console.log('finally succeeded');
+      //       callback(res.data);
+      //     } else {
+      //       console.log('reached but res.data.success = false :(');
+      //     }
+      //   },
+      //   fail: (res) => {
+      //     console.log('why second time still fail, hopeless alr');
+      //   },
+      // });
     },
   });
 }

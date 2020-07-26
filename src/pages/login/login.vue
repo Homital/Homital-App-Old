@@ -29,7 +29,7 @@
                 <button type="primary" v-bind:loading ='loggingInProcessing'
                 style="width:80%;margin-top:20px;margin-bottom:20px;"
                 @tap="_login">{{loggingInProcessing == false? 'log in'
-                :'logging in in progress'}}</button>
+                :'logging in'}}</button>
                 <button type="primary"
                 style="width:80%;margin-bottom:20px;"
                 @tap="_register">Register</button>
@@ -38,6 +38,16 @@
                 <text style="float:right;color:blue;"
                 @click="_register">>>Or register here>></text>
             </view>-->
+                <view class="input">
+      <!-- style="float:right;color:blue;" -->
+            <text style="width:80%;margin-top:20px;margin-bottom:20px;"
+      @click="_forgetPassword">Forgot your password?</text>
+    </view>
+                    <view class="input">
+      <!-- style="float:right;color:blue;" -->
+            <text style="width:80%;margin-top:20px;margin-bottom:20px;"
+      @click="_changePassword">Change password</text>
+    </view>
         </view>
     </view>
 </template>
@@ -101,16 +111,29 @@ export default {
             'content-type': 'application/json',
           },
           success: async (res) => {
-            console.log('this.email' + tHIS.email);
-            console.log('this.username' + tHIS.username);
-            if (res.data.success) {
+            if (res.statusCode == 200) {
               tHIS.valid = true;
               tHIS.refresh_token = res.data.refresh_token;
-              uni.setStorageSync('refresh_token', tHIS.refresh_token);
+              //
+              console.log('on log in,room temp is:' +
+              getApp().globalData.room_temp);
+              //
               uni.setStorageSync('userinfo', tHIS.username);
               uni.setStorageSync('notloggedin', false);
               console.log('login success set, notloggedin =',
                   uni.getStorageSync('notloggedin'));
+              uni.setStorageSync('refresh_token', tHIS.refresh_token);
+              getApp().globalData.access_token = res.data.access_token;
+              getApp().globalData.room_list = [];
+              getApp().globalData.request_room_list = true;
+              // getApp().globalData.room_added = '';
+              // getApp().globalData.room_id_added = '';
+              // getApp().globalData.room_role_added = '';
+              // getApp().globalData.room_switched_to = '';
+              // getApp().globalData.room_switched_to_id = '';
+              // getApp().globalData.oom_switched_to_role ='';
+
+
               // console.log("userinfo:", uni.getStorageSync('userinfo'));
               await uni.showToast({
                 title: 'log in successfully',
@@ -200,60 +223,22 @@ export default {
         });
       }
     },
-    //   async getDataOnLogin() {
-    //     let roomListObtained = false;
-    //     const tHIS = this;
-    //     // to get this user's list of rooms
-    //     const listUrl =
-    //     getApp().globalData.base_url + `/user/${this.username}/rooms`;
-    //     await uni.request({
-    //       url: listUrl,
-    //       data: {
-    //       },
-    //       method: 'GET',
-    //       success: async (res) => {
-    //         console.log('successfully obtain list of rooms for user: ' +
-    //        tHIS.username);
-    //         if (!res.data.success) {
-    //           tHIS.displayList = true;
-    //           const dbList = res.data;
-
-  //           for (let i = 0; i < dbList; i++) {
-  //             const object = dbList[i];
-  //             const roomname = object.getString('name');
-  //             await tHIS.roomList.push({
-  //               url: `/static/c${this.dynamicList.length+1}.png`,
-  //               text: `${roomname}`,
-  //               color: this.dynamicList.length % 2 === 0 ? '#f5f5f5' : '#fff',
-  //             });
-  //           }
-  //           if (tHIS.roomList[0]['name'] == undefined) {
-  //             console.log('reached cond roomList[0]["name"] == undefined');
-  //             tHIS.dynamicList = [];
-  //             await uni.setStorageSync(`${tHIS.username}_roomList`, []);
-  //           } else {
-  //           // store room list
-  //             uni.setStorage(`${tHIS.username}_roomList`, tHIS.roomList);
-  //             console.log('obtain list success, device list =',
-  //                 uni.getStorageSync(`${tHIS.username}_roomList`));
-  //           }
-  //           roomListObtained = true;
-  //         } else {
-  //           tHIS.displayList = false;
-  //           tHIS.error = res.data.error;
-  //           uni.showToast({
-  //             icon: 'none',
-  //             title: tHIS.error,
-  //             duration: 2000,
-  //           });
-  //         }
-  //       },
-  //     });
-  //     if (roomListObtained) {
-  //       // if gotten list, then get device list for every room
-  //       // actually should i do this here?
-  //     }
-  //   },
+    _forgetPassword() {
+      uni.navigateTo({
+        url: '../login/forgetPassword',
+        success: (res) => {},
+        fail: () => {},
+        complete: () => {},
+      });
+    },
+    _changePassword() {
+      uni.navigateTo({
+        url: '../login/updatePassword',
+        success: (res) => {},
+        fail: () => {},
+        complete: () => {},
+      });
+    },
   },
 };
 </script>

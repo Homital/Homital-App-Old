@@ -1,6 +1,6 @@
 <template>
     <view>
-        <view class="uni-padding-wrap uni-common-mt">
+<view class="uni-padding-wrap uni-common-mt">
             <view v-if="notloggedin != null && notloggedin">
                 <uni-card
                     title="Log in"
@@ -15,12 +15,11 @@
 displayList != null && !displayList"> -->
 
 <view v-if="notloggedin != null && !notloggedin">
-
-  <!-- <view> -->
   <view class="warp">
-    <!-- <text class="example-info">Click to control your devices</text> -->
+    <text class="example-info">Click to control your devices</text>
     <uni-section :title="`${username}'s home`" type="line"></uni-section>
-    <view class="example-body">
+        <view class="example-body">
+    <!-- <view v-if="displayList!=null&&!displayList" class="example-body"> -->
       <view v-if="roomList.length!==0" class="grid-dynamic-box">
         <uni-grid :column="3" :highlight="true" @change="change">
           <uni-grid-item
@@ -44,15 +43,13 @@ import uniSection from '@/components/uni-section/uni-section.vue';
 import uniGrid from '@/components/uni-grid/uni-grid.vue';
 import uniGridItem from '@/components/uni-grid-item/uni-grid-item.vue';
 import uniCard from '@/components/uni-card/uni-card.vue';
-// import uniBadge from '@/components/uni-badge/uni-badge.vue';
-// const auth = require('../../common/authorisation');
+const auth = require('../../common/authorisation');
 export default {
   components: {
     uniSection,
     uniGrid,
     uniGridItem,
     uniCard,
-    // uniBadge,
   },
   data() {
     return {
@@ -61,6 +58,8 @@ export default {
       displayList: null,
       notloggedin: null,
       roomAdded: '',
+      roomIdAdded: '',
+      roomRoleAdded: '',
     };
   },
   async onShow() {
@@ -68,147 +67,149 @@ export default {
     tHIS.notloggedin = null;
     tHIS.displayList = null;
 
-    // get username
+    // get username for xx' room
     this.username = await uni.getStorageSync('userinfo');
-    console.log('after userinfo: ', tHIS.username);
-
-    // check if a new room was just added
-
-    // tHIS.roomAdded = uni.getStorageSync(`${tHIS.username}_roomAdded`);
-    tHIS.roomAdded = getApp().globalData.room_temp;
-    console.log('printing name of temp room added ' +
-    getApp().globalData.room_temp);
-
-    tHIS.roomList = getApp().globalData.room_list;
-
-    if (tHIS.roomList == undefined) {
-      tHIS.roomList = [];
-    }
 
     console.log('checking account status');
     console.log('before' + tHIS.notloggedin);
     tHIS.notloggedin = uni.getStorageSync('notloggedin');
     console.log('after' + tHIS.notloggedin);
 
+    if (!tHIS.notloggedin) {
+    // get room list, if request_room_list set to true
+    //   console.log('request_room_list set to true' +
+    // getApp().globalData.request_room_list);
+      // if (getApp().globalData.request_room_list) {
+      tHIS.roomList = [];
+      console.log('trying to get room list...');
+      const listUrl = getApp().globalData.base_url + `/user/rooms`;
+      await auth.functions.makeAuthenticatedCall(
+          async (res) => {
+            console.log('reached get room list');
+            if (res.statusCode == 200) {
+              console.log('successfully obtain list of rooms for user: ' +
+         tHIS.username);
+              const dbList = res.data;
+              console.log('dbList length is ' + dbList.length);
+              for (let i = 0; i < dbList.length; i++) {
+                const object = dbList[i];
+                const roomname = object['name'];
+                console.log('printing room names' + roomname);
+                const roomId = object['uid'];
+                const role = object['role'];
+                console.log('printing room id: ' + roomId);
+                await tHIS.roomList.push({
+                  url: `/static/c${tHIS.roomList.length+1}.png`,
+                  text: roomname,
+                  color: tHIS.roomList.length % 2 === 0 ? '#f5f5f5' : '#fff',
+                  room_id: roomId,
+                  role: role,
+                });
+              }
+              // store the list for future use
+              getApp().globalData.room_list = tHIS.roomList;
+              // next time no need to get from db, unless did delete
+              getApp().globalData.request_room_list = false;
+              // wait until this to display the list? or not?
+              tHIS.displayList = true;
+            } else {
+              // display error in getting list from db
+              tHIS.displayList = false;
+              uni.showToast({
+                icon: 'none',
+                title: res.data.error,
+                duration: 2000,
+              });
+              console.log(res.data.error);
+            }
+          },
+          listUrl,
+          {},
+          'GET',
+      ); // finish get request
+      // } else {
+      //   // if no need to request, get directly
+      //   this.roomList = getApp().globalData.room_list;
+      // }
 
-    if (tHIS.roomAdded != '') {
-      await tHIS.roomList.push({
-        url: `/static/c${this.roomList.length+1}.png`,
-        text: `${tHIS.roomAdded}`,
-        color: this.roomList.length % 2 === 0 ? '#f5f5f5' : '#fff',
-      });
-      // uni.setStorageSync(`${tHIS.username}_roomAdded`, '');
-      getApp().globalData.room_list = tHIS.roomList;
-      tHIS.displayList = true;
+
+      // check if a new room was just added
+      // if (getApp().globalData.room_added != '') {
+      //   console.log('yes a new room was just added:)');
+      //   // tHIS.roomAdded = uni.getStorageSync(`${tHIS.username}_roomAdded`);
+      //   tHIS.roomAdded = getApp().globalData.room_added;
+      //   tHIS.roomIdAdded = getApp().globalData.room_id_added;
+      //   tHIS.roomRoleAdded = getApp().globalData.room_role_added;
+      //   await tHIS.roomList.push({
+      //     url: `/static/c${this.roomList.length+1}.png`,
+      //     text: `${tHIS.roomAdded}`,
+      //     color: tHIS.roomList.length % 2 === 0 ? '#f5f5f5' : '#fff',
+      //     room_id: tHIS.roomIdAdded,
+      //     role: tHIS.roomRoleAdded,
+      //   });
+      //   getApp().globalData.room_added = '';
+      //   getApp().globalData.room_id_added = '';
+      //   getApp().globalData.room_role_added = '';
+      //   // update 'global' room list
+      //   getApp().globalData.room_list = tHIS.roomList;
+      //   // again, not sure if i should use this display thing
+      //   tHIS.displayList = true;
+      // }
     }
   },
-  // async onLaunch() {
-  //   // to get this user's list of rooms
-  //   this.roomList = getApp().globalData.device_temp;
-  //   const listUrl =
-  //     getApp().globalData.base_url + `/user/${this.username}/rooms`;
-  //   await uni.request({
-  //     url: listUrl,
-  //     data: {
-  //     },
-  //     method: 'GET',
-  //     success: async (res) => {
-  //       console.log('successfully obtain list of rooms for user: ' +
-  //        tHIS.username);
-  //       if (res.statusCode == 200) {
-  //         tHIS.displayList = true;
-  //         const dbList = res.data;
-  //         for (let i = 0; i < dbList; i++) {
-  //           const object = dbList[i];
-  //           const roomname = object.getString('name');
-  //           console.log('printing name of room ' + roomname);
-  //           await tHIS.roomList.push({
-  //             url: `/static/c${tHIS.roomList.length+1}.png`,
-  //             text: `${roomname}`,
-  //             color: tHIS.roomList.length % 2 === 0 ? '#f5f5f5' : '#fff',
-  //           });
-  //         }
-  //         if (tHIS.roomList == undefined) {
-  //           tHIS.roomList = [];
-  //         }
-  //       } else {
-  //         tHIS.displayList = false;
-  //         tHIS.error = res.data.error;
-  //         uni.showToast({
-  //           icon: 'none',
-  //           title: tHIS.error,
-  //           duration: 2000,
-  //         });
-  //       }
-  //     },
-  //   });
-  //   console.log('STAR STAR printing room list' + tHIS.roomList);
-
-  //   if (tHIS.roomList == undefined || tHIS.roomList.length == 0
-  //   // || (tHIS.roomList.length != 0 &&
-  //   // tHIS.roomList[0]['text'] == undefined)
-  //   ) {
-  //     console.log('reached cond tHIS.roomList == undefined');
-  //     tHIS.roomList = [];
-  //     tHIS.displayList = true;
-  //   }
-  // },
   methods: {
     change(e) {
       let {
+        // eslint-disable-next-line prefer-const
         index,
       } = e.detail;
       // this.roomList[index].badge && this.roomList[index].badge++;
 
       const roomClicked = this.roomList[index]['text'];
+      const roomClickedId = this.roomList[index]['room_id'];
+      const roomClickedRole = this.roomList[index]['role'];
 
       uni.showToast({
         title: `Click to view room ${roomClicked}`,
         icon: 'none',
       });
 
-      // direct to device list page
-      uni.redirectTo({
+
+      getApp().globalData.room_switched_to = roomClicked;
+      getApp().globalData.room_switched_to_id = roomClickedId;
+      getApp().globalData.room_switched_to_role = roomClickedRole;
+
+      console.log('printing roomClicked id @change ' + roomClickedId);
+      console.log('printing id @ change ' +
+      getApp().globalData.room_switched_to_id);
+
+
+      // navigate to device list page
+      uni.navigateTo({
+        // list param not used
         url: `../devices/deviceList?room=${roomClicked}&list=roomList`,
       });
+
+      // redirect to device list page
+      // uni.redirectTo({
+      //   url: `../devices/deviceList?room=${roomClicked}&list=roomList`,
+      // });
     },
     add() {
       const tHIS = this;
       console.log('tHIS.roomList.length is ' + tHIS.roomList.length);
-      if (tHIS.roomList.length < 9) {
-        // first navigate to add room page
-        uni.navigateTo({
-          // list param not used
-          url: `./roomAdd`,
-          success: async (res) => {
-            tHIS.roomList =
-            await uni.getStorageSync(`${tHIS.username}_roomList`);
-          },
-          fail: () => {},
-          complete: () => {
-          },
-        });
-
-
-        // do this if successful ??how to tell add success or not though
-        // maybe this dynamic list should be in global data??
-        // or is it in cache
-        // ie on success do...
-
-        // this.roomList.push({
-        //   url: `/static/c${this.roomList.length+1}.png`,
-        //   text: `Device ${this.roomList.length+1}`,
-        //   color: this.roomList.length % 2 === 0 ? '#f5f5f5' : '#fff',
-        // });
-      } else {
-        uni.showToast({
-          title: 'Maximum of 9 rooms is allowed in this room',
-          icon: 'none',
-        });
-      }
-    },
-    del() {
-      this.roomList.splice(this.roomList.length - 1, 1);
+      // first navigate to add room page
+      uni.navigateTo({
+        url: `./roomAdd`,
+        success: async (res) => {
+          // should i use setStorage & getStorage
+          // tHIS.roomList =
+          // await uni.getStorageSync(`${tHIS.username}_roomList`);
+        },
+        fail: () => {},
+        complete: () => {
+        },
+      });
     },
     _directToLogin() {
       console.log('directing...');

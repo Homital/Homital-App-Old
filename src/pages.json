@@ -1,6 +1,5 @@
 {
   "pages": [
-
     {
       "path": "pages/rooms/roomList",
       "style": {
@@ -8,6 +7,83 @@
         "enablePullDownRefresh": false
       }
     },
+    {
+      "path": "pages/user/userDetail",
+      "style": {
+        "navigationBarTitleText": "Member detail",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/devices/deviceControl",
+      "style": {
+        "navigationBarTitleText": "Control device",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/devices/changeDeviceName",
+      "style": {
+        "navigationBarTitleText": "Edit device",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/devices/deviceDetails",
+      "style": {
+        "navigationBarTitleText": "Device details",
+        "enablePullDownRefresh": false
+      }
+    },
+
+    {
+      "path": "pages/user/changeUserRole",
+      "style": {
+        "navigationBarTitleText": "Edit member",
+        "enablePullDownRefresh": false
+      }
+    },
+
+    
+    {
+      "path": "pages/rooms/roomDetails",
+      "style": {
+        "navigationBarTitleText": "Room detail",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/user/addUser",
+      "style": {
+        "navigationBarTitleText": "Add user",
+        "enablePullDownRefresh": false
+      }
+    },
+
+    {
+      "path": "pages/rooms/changeRoomName",
+      "style": {
+        "navigationBarTitleText": "Rename Room",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/login/updatePassword",
+      "style": {
+        "navigationBarTitleText": "Change password",
+        "enablePullDownRefresh": false
+      }
+    },
+
+    {
+      "path": "pages/login/forgetPassword",
+      "style": {
+        "navigationBarTitleText": "Find password",
+        "enablePullDownRefresh": false
+      }
+    },
+
+    
 
     {
       "path": "pages/devices/deviceList",
