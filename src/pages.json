@@ -8,6 +8,13 @@
       }
     },
     {
+      "path": "pages/dashboard/dashboard",
+      "style": {
+        "navigationBarTitleText": "Usage Stats",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
       "path": "pages/user/userDetail",
       "style": {
         "navigationBarTitleText": "Member detail",

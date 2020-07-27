@@ -25,6 +25,11 @@
 title="Switch" @switchChange="switchChange" />
       <!-- <uni-list-item title="Add new operation" @click=add_operation /> -->
     </uni-list>
+                        <view class="input">
+      <!-- style="float:right;color:blue;" -->
+            <text style="width:80%;margin-top:20px;margin-bottom:20px;"
+      @click="_getUsage">Click to view usage statistics</text>
+    </view>
     <view class="delete_button">
       <button style="width:80%;margin-top:35px;margin-bottom:15px;"
       type="primary"
@@ -105,6 +110,12 @@ export default {
       uni.navigateTo({
         // params not used as there are some issues using onLoad
         url: `../devices/changeDeviceName`,
+      });
+    },
+    _getUsage() {
+      uni.navigateTo({
+        // params not used as there are some issues using onLoad
+        url: `../dashboard/dashboard`,
       });
     },
     async delete_device() {
