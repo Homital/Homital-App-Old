@@ -1,70 +1,76 @@
 <template>
     <view class="page">
         <view class="image-list">
-            <view class="image-item" v-for="(item,index) in array" :key="index">
+            <view class="image-item" :src="imageUrl">
                 <view class="image-content">
-                    <image style="width: 200px; height: 200px; background-color: #eeeeee;" :mode="item.mode" :src="src"
+              <image style="width:200px;height:200px;background-color:#eeeeee;"
+                    mode="scaleToFill" :src=imageUrl
                         @error="imageError"></image>
                 </view>
-                <view class="image-title">{{item.text}}</view>
+                <view class="image-title">Device usage</view>
             </view>
         </view>
     </view>
 </template>
 
 <script>
+const plotUsage = require('../../common/plot_usage');
+const auth = require('../../common/authorisation');
 export default {
-  export default {
-    data() {
-        return {
-            array: [{
-                mode: 'scaleToFill',
-                text: 'scaleToFill：不保持纵横比缩放图片，使图片完全适应'
-            }, {
-                mode: 'aspectFit',
-                text: 'aspectFit：保持纵横比缩放图片，使图片的长边能完全显示出来'
-            }, {
-                mode: 'aspectFill',
-                text: 'aspectFill：保持纵横比缩放图片，只保证图片的短边能完全显示出来'
-            }, {
-                mode: 'top',
-                text: 'top：不缩放图片，只显示图片的顶部区域'
-            }, {
-                mode: 'bottom',
-                text: 'bottom：不缩放图片，只显示图片的底部区域'
-            }, {
-                mode: 'center',
-                text: 'center：不缩放图片，只显示图片的中间区域'
-            }, {
-                mode: 'left',
-                text: 'left：不缩放图片，只显示图片的左边区域'
-            }, {
-                mode: 'right',
-                text: 'right：不缩放图片，只显示图片的右边边区域'
-            }, {
-                mode: 'top left',
-                text: 'top left：不缩放图片，只显示图片的左上边区域'
-            }, {
-                mode: 'top right',
-                text: 'top right：不缩放图片，只显示图片的右上边区域'
-            }, {
-                mode: 'bottom left',
-                text: 'bottom left：不缩放图片，只显示图片的左下边区域'
-            }, {
-                mode: 'bottom right',
-                text: 'bottom right：不缩放图片，只显示图片的右下边区域'
-            }],
-            src: 'https://img-cdn-qiniu.dcloud.net.cn/uniapp/images/shuijiao.jpg'
-        }
+  data() {
+    return {
+      // imageUrl: 'https://img-cdn-qiniu.dcloud.net.cn/uniapp/images/shuijiao.jpg',
+      // imageUrl: 'https://quickchart.io/chart?c={"type":"bar","data":{"labels":["Tue","Wed","Thu","Fri","Sat","Sun","Mon"],"datasets":[{"data":[1329,521,199,1111,702,536,1029],"backgroundColor":"rgba(54, 162, 235, 0.5)"}]},"options":{"responsive":true,"legend":{"display":false},"scales":{"xAxes":[{"gridLines":{"display":false}}],"yAxes":[{"gridLines":{"display":true},"ticks":{"beginAtZero":true,"stepSize":100}}]}}}',
+      imageUrl: '',
+      deviceName: '',
+      roomId: '',
+      array: [{
+        mode: 'scaleToFill',
+        text: 'scaleToFill：不保持纵横比缩放图片，使图片完全适应',
+      }, {
+        mode: 'aspectFit',
+        text: 'aspectFit：保持纵横比缩放图片，使图片的长边能完全显示出来',
+      }, {
+        mode: 'aspectFill',
+        text: 'aspectFill：保持纵横比缩放图片，只保证图片的短边能完全显示出来',
+      }],
+      src: 'https://img-cdn-qiniu.dcloud.net.cn/uniapp/images/shuijiao.jpg',
+    };
+  },
+  async onShow() {
+    const tHIS = this;
+    this.deviceName = getApp().globalData.device_switched_to;
+    this.roomId = getApp().globalData.room_switched_to_id;
+    const dashboardUrl = getApp().globalData.base_url +
+      `/user/data/?uid=${this.roomId}&devicename=${this.deviceName}&demo=true`;
+    await auth.functions.makeAuthenticatedCall(
+        async (res) => {
+          console.log('reached get user statistics');
+          if (res.statusCode == 200) {
+            console.log('successfully obtain user statistics for user: ' +
+         tHIS.username);
+            tHIS.imageUrl = plotUsage(res.data);
+            console.log(tHIS.imageUrl);
+          } else {
+            uni.showToast({
+              icon: 'none',
+              title: res.data.error,
+              duration: 2000,
+            });
+          }
+        },
+        dashboardUrl,
+        {},
+        'GET',
+    );
+  },
+  methods: {
+    imageError: function(e) {
+      console.error('image发生error事件，携带值为' + e.detail.errMsg);
     },
-    methods: {
-        imageError: function(e) {
-            console.error('image发生error事件，携带值为' + e.detail.errMsg)
-        }
-    }
-}
+  },
+};
 
-}
 </script>
 
 <style>
