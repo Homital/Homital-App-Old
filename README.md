@@ -4,22 +4,9 @@
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ae8caf56011d4f2fa616e76527677c5f)](https://www.codacy.com/gh/Homital/Homital-App?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Homital/Homital-App&amp;utm_campaign=Badge_Grade)
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ae8caf56011d4f2fa616e76527677c5f)](https://www.codacy.com/gh/Homital/Homital-App?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Homital/Homital-App&amp;utm_campaign=Badge_Grade)
 
-## Project setup
-```
-npm install
-```
+Refer to:
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+[Developer Guide](https://homital.github.io/guide/developer-guide/#homital-app)
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+[User Guide](https://homital.github.io/guide/user-guide/#quickstart)
