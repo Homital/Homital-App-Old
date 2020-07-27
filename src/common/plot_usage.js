@@ -14,7 +14,7 @@ function getChartURL(usageList) {
     return a.date - b.date;
   });
 
-  const c_obj = {
+  const cObj = {
     type: 'bar',
     data: {
       labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'],
@@ -50,19 +50,25 @@ function getChartURL(usageList) {
   };
 
   let j = 0;
-  for (let i = usageList.length-7 >= 0 ? usageList.length-7 : 0; i<usageList.length; i++) {
-    c_obj.data.labels[j] = usageListProcessed[i].day;
-    c_obj.data.datasets[0].data[j++] = usageListProcessed[i].usage;
+  for (let i = usageList.length-7>=0?usageList.length-7:0;
+    i<usageList.length; i++) {
+    cObj.data.labels[j] = usageListProcessed[i].day;
+    cObj.data.datasets[0].data[j++] = usageListProcessed[i].usage;
   }
 
-  const c = JSON.stringify(c_obj);
+  const c = JSON.stringify(cObj);
 
-  const dailyUsageURL = `https://quickchart.io/chart?c=${c}`;
+  const dailyUsageURL = `https://quickchart.io/chart?bkg=white&c=${c}`;
   return dailyUsageURL;
 }
 
 module.exports = getChartURL;
 
+/**
+ * return day of the week
+ * @param {*} day day
+ * @return {*} day of the week
+ */
 function day2String(day) {
   let res;
   switch (day) {
