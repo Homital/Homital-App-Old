@@ -119,10 +119,10 @@ export default {
               getApp().globalData.room_temp);
               //
               uni.setStorageSync('userinfo', tHIS.username);
-              uni.setStorageSync('notloggedin', false);
-              console.log('login success set, notloggedin =',
-                  uni.getStorageSync('notloggedin'));
-              uni.setStorageSync('refresh_token', tHIS.refresh_token);
+              // uni.setStorageSync('notloggedin', false);
+              getApp().globalData.notloggedin = false;
+              // uni.setStorageSync('refresh_token', tHIS.refresh_token);
+              getApp().globalData.refresh_token = tHIS.refresh_token;
               getApp().globalData.access_token = res.data.access_token;
               getApp().globalData.room_list = [];
               getApp().globalData.request_room_list = true;
@@ -196,11 +196,12 @@ export default {
                   if (res.data.success) {
                     tHIS.valid = true;
                     tHIS.refresh_token = res.data.refresh_token;
-                    uni.setStorageSync('refresh_token', tHIS.refresh_token);
                     uni.setStorageSync('userinfo', tHIS.username);
-                    uni.setStorageSync('notloggedin', false);
-                    console.log('login success set, notloggedin =',
-                        uni.getStorageSync('notloggedin'));
+                    // uni.setStorageSync('notloggedin', false);
+                    getApp().globalData.notloggedin = false;
+                    // uni.setStorageSync('refresh_token', tHIS.refresh_token);
+                    getApp().globalData.refresh_token = tHIS.refresh_token;
+
                     await uni.showToast({
                       title: 'log in successfully',
                       duration: 2000,

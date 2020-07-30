@@ -72,7 +72,7 @@ export default {
 
     console.log('checking account status');
     console.log('before' + tHIS.notloggedin);
-    tHIS.notloggedin = uni.getStorageSync('notloggedin');
+    tHIS.notloggedin = getApp().globalData.notloggedin;
     console.log('after' + tHIS.notloggedin);
 
     if (!tHIS.notloggedin) {

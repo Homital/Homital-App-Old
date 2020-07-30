@@ -46,13 +46,10 @@ export default {
   async onShow() {
     const tHIS = this;
     tHIS.notloggedin = null;
-    console.log('before userinfo: ', uni.getStorageSync('userinfo'));
-    console.log('before refresh_token: ', uni.getStorageSync('refresh_token'));
-    console.log('checking account status');
-    const val = uni.getStorageSync('notloggedin');
+    const val = getApp().globalData.notloggedin;
     console.log('print val' + val);
     console.log('before' + tHIS.notloggedin);
-    tHIS.notloggedin = await uni.getStorageSync('notloggedin');
+    tHIS.notloggedin = getApp().globalData.notloggedin;
     tHIS.userinfo = uni.getStorageSync('userinfo');
     console.log('after userinfo: ', uni.getStorageSync('userinfo'));
     console.log('after' + tHIS.notloggedin);
@@ -62,16 +59,10 @@ export default {
     const tHIS = this;
     tHIS.notloggedin = null;
 
-    console.log('before userinfo: ', uni.getStorageSync('userinfo'));
-    console.log('before refresh_token: ', uni.getStorageSync('refresh_token'));
     console.log('checking account status');
-    const val = uni.getStorageSync('notloggedin');
-    console.log('print val' + val);
-    console.log('before' + tHIS.notloggedin);
-    tHIS.notloggedin = await uni.getStorageSync('notloggedin');
+
+    tHIS.notloggedin = getApp().globalData.notloggedin;
     tHIS.userinfo = uni.getStorageSync('userinfo');
-    console.log('after userinfo: ', uni.getStorageSync('userinfo'));
-    console.log('after' + tHIS.notloggedin);
 
 
     setTimeout(function() {
@@ -82,8 +73,7 @@ export default {
     _logout() {
       const tHIS = this;
       tHIS.loggingOutProcessing = true;
-      this.refresh_token = uni.getStorageSync('refresh_token');
-      console.log(this.refresh_token);
+      this.refresh_token = getApp().globalData.refresh_token;
       const url = getApp().globalData.base_url + '/auth/user/logout';
       uni.request({
         url: url,
@@ -97,8 +87,8 @@ export default {
         success: async (res) => {
           console.log('trying to log out...');
           await uni.removeStorageSync('userinfo');
-          await uni.removeStorageSync('refresh_token');
-          await uni.setStorageSync('notloggedin', true);
+          getApp().globalData.notloggedin = true;
+          getApp().globalData.refresh_token = '';
           tHIS.loggingOutProcessing = false;
           await uni.showToast({
             title: 'You have successfully logged out.',
@@ -110,8 +100,8 @@ export default {
         },
         fail: () => {
           uni.removeStorageSync('userinfo');
-          uni.removeStorageSync('refresh_token');
-          uni.setStorageSync('notloggedin', true);
+          getApp().globalData.notloggedin = true;
+          getApp().globalData.refresh_token = '';
           tHIS.loggingOutProcessing = false;
           uni.reLaunch({
             url: '../me/me',

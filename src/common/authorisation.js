@@ -12,7 +12,7 @@ function requestAcessToken(callback) {
  * @param {*} num num of times tried
  */
 async function requestAcessTokenwrapped(callback, num) {
-  const refreshToken = await uni.getStorageSync('refresh_token');
+  const refreshToken = getApp().globalData.refresh_token;
   await uni.request({
     url: getApp().globalData.base_url + '/auth/user/token',
     data: {
@@ -105,8 +105,8 @@ async function makeAuthenticatedCallWrapped(
                 title: 'Your token has already expired. Please log in again.',
                 duration: 2000,
               });
-              uni.setStorageSync('notloggedin', true);
-              uni.removeStorageSync('refresh_token');
+              getApp().globalData.notloggedin = true;
+              getApp().globalData.refresh_token = '';
               uni.removeStorageSync('userinfo');
               callback(res);
               console.log('cannot get access token in 2 attempts, ' +
