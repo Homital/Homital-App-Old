@@ -1,6 +1,13 @@
 {
   "pages": [
     {
+      "path": "pages/me/me",
+      "style": {
+        "navigationBarTitleText": "Me",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
       "path": "pages/rooms/roomList",
       "style": {
         "navigationBarTitleText": "Homital",
@@ -147,13 +154,6 @@
       "path": "pages/login/login",
       "style": {
         "navigationBarTitleText": "Log in to Homital"
-      }
-    },
-    {
-      "path": "pages/me/me",
-      "style": {
-        "navigationBarTitleText": "Me",
-        "enablePullDownRefresh": true
       }
     }
   ],
