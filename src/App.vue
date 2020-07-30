@@ -3,6 +3,8 @@
 export default {
   globalData: {
     base_url: 'http://homital.ml:2333/api',
+    notloggedin: true,
+    refresh_token: '',
     access_token: '',
     room_added: '',
     room_id_added: '',
