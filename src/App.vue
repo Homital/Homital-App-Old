@@ -2,7 +2,7 @@
 // const auth = require('common/authorisation');
 export default {
   globalData: {
-    base_url: 'http://homital.ml:2333/api',
+    base_url: 'https://homital.herokuapp.com/api',
     notloggedin: true,
     refresh_token: '',
     access_token: '',
